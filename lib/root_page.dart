@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:untitled/screen/camera/camera_pushup/views/pose_detection_view.dart';
 import 'package:untitled/screen/camera/camera_screen.dart';
 import 'package:untitled/screen/cart/cart_screen.dart';
 import 'package:untitled/screen/home/home_screen.dart';
@@ -28,6 +29,7 @@ class _RootPageState extends State<RootPage> {
       CartScreen(),
       UserScreen(),
       CameraApp(cameras: widget.cameras),
+      PoseDetectorView(),
     ];
   }
 
