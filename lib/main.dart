@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:untitled/root_page.dart';
 import 'package:camera/camera.dart';
-
+import 'package:untitled/screen/auth/login_screen.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 late List<CameraDescription> _cameras;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   _cameras = await availableCameras();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   runApp(MyApp());
 }
 
@@ -37,7 +39,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: RootPage(cameras: _cameras), // Không dùng 'const' ở đây
+      home: LoginScreen(cameras: _cameras), // Không dùng 'const' ở đây
     );
   }
 }

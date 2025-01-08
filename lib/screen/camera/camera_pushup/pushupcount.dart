@@ -1,4 +1,4 @@
-library pushupcount;
+library;
 
 /// A Calculator.
 class Calculator {
