@@ -16,9 +16,11 @@ class _CameraAppState extends State<CameraApp> {
   @override
   void initState() {
     super.initState();
+    print("Initializing camera..."); // Log camera init
     controller = CameraController(widget.cameras[0], ResolutionPreset.max);
     controller.initialize().then((_) {
       if (!mounted) {
+        print("Camera initialized successfully!"); // Log success
         return;
       }
       setState(() {});

@@ -23,6 +23,8 @@ class _RootPageState extends State<RootPage> {
   void initState() {
     super.initState();
     // Truyền cameras vào CameraApp
+    print("Cameras available: ${widget.cameras.length}"); // Log cameras
+
     screens = [
       HomeScreen(),
       SearchScreen(),

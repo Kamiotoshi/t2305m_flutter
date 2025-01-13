@@ -11,15 +11,16 @@ import '../painters/pose_painter.dart';
 import '../utils.dart';
 
 class CameraView extends StatefulWidget {
-  const CameraView(
-      {super.key,
+  CameraView(
+      {Key? key,
       required this.posePainter,
       required this.customPaint,
       required this.onImage,
       this.onCameraFeedReady,
       this.onDetectorViewModeChanged,
       this.onCameraLensDirectionChanged,
-      this.initialCameraLensDirection = CameraLensDirection.front});
+      this.initialCameraLensDirection = CameraLensDirection.front})
+      : super(key: key);
 
   final PosePainter? posePainter;
   final CustomPaint? customPaint;
@@ -147,8 +148,8 @@ class _CameraViewState extends State<CameraView> {
         children: <Widget>[
           Center(
             child: _changingCameraLens
-                ? const Center(
-                    child: Text('Changing camera lens'),
+                ? Center(
+                    child: const Text('Changing camera lens'),
                   )
                 : CameraPreview(
                     _controller!,
@@ -172,7 +173,7 @@ class _CameraViewState extends State<CameraView> {
       left: 0,
       top: 50,
       right: 0,
-      child: SizedBox(
+      child: Container(
         width: 70,
         child: Column(
           children: [
@@ -193,7 +194,7 @@ class _CameraViewState extends State<CameraView> {
               child: Text(
                 "${bloc.counter}",
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.black, fontSize: 30),
+                style: TextStyle(color: Colors.black, fontSize: 30),
               ),
             )
           ],
@@ -215,7 +216,7 @@ class _CameraViewState extends State<CameraView> {
               Navigator.of(context).pop();
             },
             backgroundColor: Colors.black54,
-            child: const Icon(
+            child: Icon(
               Icons.arrow_back_ios_outlined,
               size: 20,
             ),
@@ -233,7 +234,7 @@ class _CameraViewState extends State<CameraView> {
             heroTag: Object(),
             onPressed: widget.onDetectorViewModeChanged,
             backgroundColor: Colors.black54,
-            child: const Icon(
+            child: Icon(
               Icons.photo_library_outlined,
               size: 25,
             ),
@@ -299,7 +300,7 @@ class _CameraViewState extends State<CameraView> {
                     child: Center(
                       child: Text(
                         '${_currentZoomLevel.toStringAsFixed(1)}x',
-                        style: const TextStyle(color: Colors.white),
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
@@ -314,7 +315,7 @@ class _CameraViewState extends State<CameraView> {
         top: 40,
         right: 8,
         child: ConstrainedBox(
-          constraints: const BoxConstraints(
+          constraints: BoxConstraints(
             maxHeight: 250,
           ),
           child: Column(children: [
@@ -329,7 +330,7 @@ class _CameraViewState extends State<CameraView> {
                 child: Center(
                   child: Text(
                     '${_currentExposureOffset.toStringAsFixed(1)}x',
-                    style: const TextStyle(color: Colors.white),
+                    style: TextStyle(color: Colors.white),
                   ),
                 ),
               ),
@@ -468,9 +469,7 @@ class _CameraViewState extends State<CameraView> {
     // * bgra8888 for iOS
     if (format == null ||
         (Platform.isAndroid && format != InputImageFormat.nv21) ||
-        (Platform.isIOS && format != InputImageFormat.bgra8888)) {
-      return null;
-    }
+        (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
 
     // since format is constraint to nv21 or bgra8888, both only have one plane
     if (image.planes.length != 1) return null;

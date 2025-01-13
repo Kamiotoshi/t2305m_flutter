@@ -7,13 +7,13 @@ class PushUpCounter extends Cubit<PushUpState> {
   int counter = 0;
 
   void setUpPushupState(PushUpState current) {
-    print("emittedState $state");
+    print("emittedState ${state}");
     emit(current);
   }
 
   void increment() {
     counter++;
-    print("Counter $counter");
+    print("Counter ${counter}");
     emit(state);
   }
 

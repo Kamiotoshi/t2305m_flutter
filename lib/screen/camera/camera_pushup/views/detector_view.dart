@@ -9,8 +9,8 @@ import 'gallery_view.dart';
 enum DetectorViewMode { liveFeed, gallery }
 
 class DetectorView extends StatefulWidget {
-  const DetectorView({
-    super.key,
+  DetectorView({
+    Key? key,
     required this.posePainter,
     required this.title,
     required this.onImage,
@@ -21,7 +21,7 @@ class DetectorView extends StatefulWidget {
     this.onCameraFeedReady,
     this.onDetectorViewModeChanged,
     this.onCameraLensDirectionChanged,
-  });
+  }) : super(key: key);
 
   final PosePainter? posePainter;
   final String title;
