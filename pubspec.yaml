@@ -69,6 +69,7 @@ flutter:
     - assets/images/logo.png
     - assets/images/android_logo.png
     - assets/images/android_branding.png
+    - assets/pose/fitness_pose_samples.csv
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
