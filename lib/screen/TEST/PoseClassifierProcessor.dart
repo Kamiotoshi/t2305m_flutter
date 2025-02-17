@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import '../TEST/pose_sample.dart';
 
 import 'dart:async';
-
-class UserScreen extends StatefulWidget {
-  const UserScreen({super.key});
+//phair viet lai
+class PoseClassifierProcessor extends StatefulWidget {
+  const PoseClassifierProcessor({super.key});
 
   @override
-  _UserScreenState createState() => _UserScreenState();
+  _PoseClassifierProcessorState createState() => _PoseClassifierProcessorState();
 }
 
-class _UserScreenState extends State<UserScreen> {
+class _PoseClassifierProcessorState extends State<PoseClassifierProcessor> {
   late Future<List<PoseSample>> poseSamplesFuture;
 
   @override
