@@ -1,18 +1,23 @@
-import 'dart:io';
 import 'package:flutter/services.dart';
+import '../TEST/point3d.dart';
+import '../TEST/pose_embedding.dart';
 
 class PoseSample {
+  static const int numLandmarks = 33;
+  static const int numDims = 3;
+
   final String name;
   final String className;
-  final List<List<double>> landmarks; // Mỗi phần tử là [x, y, z]
+  final List<Point3D> landmarks;
+  final List<Point3D> embedding;
 
   PoseSample({
     required this.name,
     required this.className,
     required this.landmarks,
-  });
+  }) : embedding = PoseEmbedding.getPoseEmbedding(landmarks);
 
-  // Hàm đọc file CSV và trả về danh sách PoseSample
+  /// 🔹 Đọc file CSV và trả về danh sách PoseSample
   static Future<List<PoseSample>> loadPoseSamples(String csvPath) async {
     List<PoseSample> poseSamples = [];
 
@@ -22,7 +27,7 @@ class PoseSample {
 
       for (String line in lines) {
         PoseSample? poseSample = PoseSample.fromCsv(line);
-        if (poseSample != null) { // Chỉ thêm vào danh sách nếu dòng hợp lệ
+        if (poseSample != null) {
           poseSamples.add(poseSample);
         }
       }
@@ -33,37 +38,35 @@ class PoseSample {
     return poseSamples;
   }
 
-  // Chuyển 1 dòng CSV thành PoseSample
+  /// 🔹 Chuyển một dòng CSV thành PoseSample
   static PoseSample? fromCsv(String csvLine) {
-    // Kiểm tra nếu dòng trống hoặc chỉ chứa khoảng trắng thì bỏ qua
-    if (csvLine.trim().isEmpty) {
-      return null;
-    }
-
+    if (csvLine.trim().isEmpty) return null;
     List<String> tokens = csvLine.split(',');
 
-    // In số lượng phần tử để debug
-    print("Dòng CSV có ${tokens.length} cột: $csvLine");
-
-    // Kiểm tra xem dữ liệu có đủ không (2 giá trị đầu tiên là tên + loại bài tập)
-    if (tokens.length < (33 * 3) + 2) {
-      print("Lỗi: Dữ liệu không hợp lệ: $csvLine");
+    // 🔥 Kiểm tra số cột có đúng hay không
+    if (tokens.length < (numLandmarks * numDims) + 2) {
+      print("⚠️ Lỗi: Dữ liệu CSV không hợp lệ (Số cột không đúng): $csvLine");
       return null;
     }
 
-    String name = tokens[0]; // Tên ảnh mẫu
-    String className = tokens[1]; // Loại bài tập (pushups_up, squats_down, v.v.)
-    List<List<double>> landmarks = [];
+    String name = tokens[0];
+    String className = tokens[1];
+    List<Point3D> landmarks = [];
 
-    // Chuyển đổi tọa độ từ chuỗi thành số
-    for (int i = 2; i < tokens.length; i += 3) {
+    // 🔥 Kiểm tra index trước khi thêm vào danh sách
+    for (int i = 2; i < tokens.length; i += numDims) {
+      if (i + 2 >= tokens.length) {
+        print("⚠️ Lỗi: Index ngoài phạm vi trong dòng CSV");
+        continue; // Bỏ qua dòng lỗi thay vì gây crash
+      }
+
       try {
         double x = double.parse(tokens[i]);
         double y = double.parse(tokens[i + 1]);
         double z = double.parse(tokens[i + 2]);
-        landmarks.add([x, y, z]);
+        landmarks.add(Point3D(x, y, z));
       } catch (e) {
-        print("Lỗi chuyển đổi tọa độ: $e");
+        print("⚠️ Lỗi chuyển đổi tọa độ: $e");
         return null;
       }
     }

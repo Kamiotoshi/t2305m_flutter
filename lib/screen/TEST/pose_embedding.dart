@@ -1,45 +1,40 @@
 import 'dart:math';
-import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import '../TEST/point3d.dart';
 
 class PoseEmbedding {
-  static const double torsoMultiplier = 2.5; // Hệ số nhân cho kích thước phần thân
+  static const double torsoMultiplier = 2.5;
 
-  /// Chuyển đổi danh sách keypoints thành embedding (vector đặc trưng).
+  /// Chuyển đổi danh sách keypoints thành vector đặc trưng (embedding)
   static List<Point3D> getPoseEmbedding(List<Point3D> landmarks) {
     List<Point3D> normalizedLandmarks = normalize(landmarks);
     return getEmbedding(normalizedLandmarks);
   }
 
-  /// Chuẩn hóa dữ liệu để giúp so sánh dễ dàng hơn.
+  /// 🔹 Chuẩn hóa dữ liệu pose trước khi so sánh
   static List<Point3D> normalize(List<Point3D> landmarks) {
     List<Point3D> normalizedLandmarks = List.from(landmarks);
 
-    // 1️⃣ Dịch chuyển để phần hông nằm ở trung tâm
-    Point3D hipsCenter = average(
-        landmarks[PoseLandmarkType.leftHip.index],
-        landmarks[PoseLandmarkType.rightHip.index]
-    );
+    // 🔹 1️⃣ Lấy trung tâm phần hông
+    Point3D hipsCenter = average(landmarks[11], landmarks[12]); // leftHip & rightHip
 
-    subtractAll(hipsCenter, normalizedLandmarks);
+    // 🔹 2️⃣ Dịch chuyển toàn bộ tọa độ về trung tâm hông
+    for (int i = 0; i < normalizedLandmarks.length; i++) {
+      normalizedLandmarks[i] = subtract(normalizedLandmarks[i], hipsCenter);
+    }
 
-    // 2️⃣ Chuẩn hóa kích thước dựa trên phần thân (torso)
+    // 🔹 3️⃣ Chuẩn hóa kích thước dựa trên phần thân (torso)
     double scale = 1 / getPoseSize(normalizedLandmarks);
-    multiplyAll(normalizedLandmarks, scale * 100); // Nhân với 100 để dễ debug
+    for (int i = 0; i < normalizedLandmarks.length; i++) {
+      normalizedLandmarks[i] = multiply(normalizedLandmarks[i], scale * 100);
+    }
 
     return normalizedLandmarks;
   }
 
-  /// Tính toán kích thước của tư thế dựa trên khoảng cách giữa các bộ phận cơ thể
+  /// 🔹 Tính toán kích thước cơ thể dựa trên khoảng cách giữa các bộ phận
   static double getPoseSize(List<Point3D> landmarks) {
-    Point3D hipsCenter = average(
-        landmarks[PoseLandmarkType.leftHip.index],
-        landmarks[PoseLandmarkType.rightHip.index]
-    );
-
-    Point3D shouldersCenter = average(
-        landmarks[PoseLandmarkType.leftShoulder.index],
-        landmarks[PoseLandmarkType.rightShoulder.index]
-    );
+    Point3D hipsCenter = average(landmarks[11], landmarks[12]); // leftHip & rightHip
+    Point3D shouldersCenter = average(landmarks[5], landmarks[6]); // leftShoulder & rightShoulder
 
     double torsoSize = l2Norm2D(subtract(hipsCenter, shouldersCenter));
     double maxDistance = torsoSize * torsoMultiplier;
@@ -53,72 +48,40 @@ class PoseEmbedding {
     return maxDistance;
   }
 
-  /// Trích xuất các đặc trưng để tạo "embedding" dùng cho phân loại
+  /// 🔹 Trích xuất các đặc trưng (embedding) để phân loại tư thế
   static List<Point3D> getEmbedding(List<Point3D> lm) {
     List<Point3D> embedding = [];
 
-    // Một khớp
-    embedding.add(subtract(
-        average(lm[PoseLandmarkType.leftHip.index], lm[PoseLandmarkType.rightHip.index]),
-        average(lm[PoseLandmarkType.leftShoulder.index], lm[PoseLandmarkType.rightShoulder.index])
-    ));
-
-    embedding.add(subtract(lm[PoseLandmarkType.leftShoulder.index], lm[PoseLandmarkType.leftElbow.index]));
-    embedding.add(subtract(lm[PoseLandmarkType.rightShoulder.index], lm[PoseLandmarkType.rightElbow.index]));
-
-    embedding.add(subtract(lm[PoseLandmarkType.leftElbow.index], lm[PoseLandmarkType.leftWrist.index]));
-    embedding.add(subtract(lm[PoseLandmarkType.rightElbow.index], lm[PoseLandmarkType.rightWrist.index]));
-
-    embedding.add(subtract(lm[PoseLandmarkType.leftHip.index], lm[PoseLandmarkType.leftKnee.index]));
-    embedding.add(subtract(lm[PoseLandmarkType.rightHip.index], lm[PoseLandmarkType.rightKnee.index]));
-
-    embedding.add(subtract(lm[PoseLandmarkType.leftKnee.index], lm[PoseLandmarkType.leftAnkle.index]));
-    embedding.add(subtract(lm[PoseLandmarkType.rightKnee.index], lm[PoseLandmarkType.rightAnkle.index]));
+    embedding.add(subtract(average(lm[11], lm[12]), average(lm[5], lm[6]))); // Hông - Vai
+    embedding.add(subtract(lm[5], lm[7])); // Vai - Khuỷu tay trái
+    embedding.add(subtract(lm[6], lm[8])); // Vai - Khuỷu tay phải
+    embedding.add(subtract(lm[7], lm[9])); // Khuỷu tay - Cổ tay trái
+    embedding.add(subtract(lm[8], lm[10])); // Khuỷu tay - Cổ tay phải
+    embedding.add(subtract(lm[11], lm[13])); // Hông - Đầu gối trái
+    embedding.add(subtract(lm[12], lm[14])); // Hông - Đầu gối phải
+    embedding.add(subtract(lm[13], lm[15])); // Đầu gối - Mắt cá chân trái
+    embedding.add(subtract(lm[14], lm[16])); // Đầu gối - Mắt cá chân phải
 
     return embedding;
   }
 
-  /// Tính trung bình của hai điểm
+  /// 🔹 Tính trung bình của hai điểm
   static Point3D average(Point3D a, Point3D b) {
     return Point3D((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   }
 
-  /// Trừ tất cả các điểm trong danh sách với một điểm `p`
-  static void subtractAll(Point3D p, List<Point3D> pointsList) {
-    for (int i = 0; i < pointsList.length; i++) {
-      pointsList[i] = subtract(pointsList[i], p);
-    }
-  }
-
-  /// Nhân tất cả các điểm trong danh sách với một giá trị `scale`
-  static void multiplyAll(List<Point3D> pointsList, double scale) {
-    for (int i = 0; i < pointsList.length; i++) {
-      pointsList[i] = multiply(pointsList[i], scale);
-    }
-  }
-
-  /// Trừ hai điểm 3D
+  /// 🔹 Trừ hai điểm 3D
   static Point3D subtract(Point3D a, Point3D b) {
     return Point3D(a.x - b.x, a.y - b.y, a.z - b.z);
   }
 
-  /// Nhân một điểm 3D với giá trị `scale`
+  /// 🔹 Nhân một điểm 3D với giá trị `scale`
   static Point3D multiply(Point3D a, double scale) {
     return Point3D(a.x * scale, a.y * scale, a.z * scale);
   }
 
-  /// Tính khoảng cách Euclidean 2D (bỏ qua trục Z)
+  /// 🔹 Tính khoảng cách Euclidean 2D (bỏ qua trục Z)
   static double l2Norm2D(Point3D point) {
     return sqrt(point.x * point.x + point.y * point.y);
   }
-}
-
-/// Lớp đại diện cho một điểm trong không gian 3D
-class Point3D {
-  final double x, y, z;
-
-  Point3D(this.x, this.y, this.z);
-
-  @override
-  String toString() => "($x, $y, $z)";
 }

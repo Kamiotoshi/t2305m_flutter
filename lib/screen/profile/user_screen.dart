@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../TEST/pose_sample.dart';
-
 import 'dart:async';
 
 class UserScreen extends StatefulWidget {
@@ -16,23 +15,26 @@ class _UserScreenState extends State<UserScreen> {
   @override
   void initState() {
     super.initState();
-    poseSamplesFuture = PoseSample.loadPoseSamples("assets/pose/fitness_pose_samples.csv ");
+    poseSamplesFuture = PoseSample.loadPoseSamples("assets/pose/fitness_pose_samples.csv"); // ✅ Đã xóa dấu cách dư
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("User Screen")),
+      appBar: AppBar(title: const Text("User Screen")),
       body: FutureBuilder<List<PoseSample>>(
         future: poseSamplesFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator()); // Hiển thị loading khi đang tải dữ liệu
+            return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text("Lỗi: ${snapshot.error}"));
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("Không có dữ liệu"));
+            return const Center(child: Text("Không có dữ liệu"));
           }
+
+          // ✅ In ra số lượng mẫu đọc được để kiểm tra
+          print("📌 Đọc được ${snapshot.data!.length} mẫu từ CSV!");
 
           // Lấy dữ liệu mẫu đầu tiên để hiển thị
           PoseSample sample = snapshot.data![0];
@@ -42,11 +44,11 @@ class _UserScreenState extends State<UserScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Tên mẫu: ${sample.name}", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                SizedBox(height: 10),
-                Text("Bài tập: ${sample.className}", style: TextStyle(fontSize: 16)),
-                SizedBox(height: 10),
-                Text("Tọa độ Left Shoulder: ${sample.landmarks[5]}", style: TextStyle(fontSize: 16)),
+                Text("Tên mẫu: ${sample.name}", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 10),
+                Text("Bài tập: ${sample.className}", style: const TextStyle(fontSize: 16)),
+                const SizedBox(height: 10),
+                Text("Tọa độ Left Shoulder: ${sample.landmarks[5]}", style: const TextStyle(fontSize: 16)),
               ],
             ),
           );
