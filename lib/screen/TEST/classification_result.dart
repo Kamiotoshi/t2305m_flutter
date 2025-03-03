@@ -1,31 +1,32 @@
 class ClassificationResult {
-  final Map<String, double> _classConfidences = {};
+  // Lưu trữ tên class và độ tự tin tương ứng
+  final Map<String, double> classConfidences = {};
 
-  /// Trả về tất cả các lớp bài tập đã được phân loại.
+  /// Lấy tất cả các class đã được phân loại
   Set<String> getAllClasses() {
-    return _classConfidences.keys.toSet();
+    return classConfidences.keys.toSet();
   }
 
-  /// Lấy độ chính xác của một lớp bài tập.
+  /// Lấy độ tự tin của một class cụ thể
   double getClassConfidence(String className) {
-    return _classConfidences.containsKey(className) ? _classConfidences[className]! : 0.0;
+    return classConfidences[className] ?? 0.0;
   }
 
-  /// Trả về lớp có độ chính xác cao nhất.
+  /// Lấy class có độ tự tin cao nhất
   String getMaxConfidenceClass() {
-    if (_classConfidences.isEmpty) return "unknown";
-    return _classConfidences.entries
+    if (classConfidences.isEmpty) return "Unknown";
+    return classConfidences.entries
         .reduce((a, b) => a.value > b.value ? a : b)
         .key;
   }
 
-  /// Tăng độ chính xác của một lớp bài tập.
-  void incrementClassConfidence(String className, [double value = 1.0]) {
-    _classConfidences[className] = (_classConfidences[className] ?? 0.0) + value;
+  /// Tăng độ tự tin của một class cụ thể
+  void incrementClassConfidence(String className) {
+    classConfidences[className] = (classConfidences[className] ?? 0) + 1;
   }
 
-  /// Gán giá trị độ chính xác cho một lớp bài tập.
+  /// Đặt độ tự tin của một class cụ thể
   void putClassConfidence(String className, double confidence) {
-    _classConfidences[className] = confidence;
+    classConfidences[className] = confidence;
   }
 }

@@ -2,35 +2,31 @@ import 'dart:collection';
 import 'classification_result.dart';
 
 class EMASmoothing {
-  static const int defaultWindowSize = 10;  // Kích thước cửa sổ EMA
-  static const double defaultAlpha = 0.2;   // Hệ số alpha cho EMA
-  static const int resetThresholdMs = 100;  // Ngưỡng reset nếu dữ liệu bị gián đoạn
+  static const int defaultWindowSize = 10;
+  static const double defaultAlpha = 0.2;
+  static const int resetThresholdMs = 100;
 
   final int windowSize;
   final double alpha;
-  final Queue<ClassificationResult> window = Queue<ClassificationResult>();
+  final Queue<ClassificationResult> window;
 
-  int lastInputTimestamp = 0; // Thời gian cuối cùng dữ liệu được nhập
+  int lastInputMs = DateTime.now().millisecondsSinceEpoch;
 
-  EMASmoothing({this.windowSize = defaultWindowSize, this.alpha = defaultAlpha});
+  EMASmoothing({this.windowSize = defaultWindowSize, this.alpha = defaultAlpha})
+      : window = ListQueue(defaultWindowSize);
 
-  /// Nhận `ClassificationResult` đầu vào và trả về kết quả làm mượt
-  ClassificationResult getSmoothedResult(ClassificationResult currentResult, int timestamp) {
-    // Kiểm tra nếu có gián đoạn quá lâu, reset dữ liệu
-    if (lastInputTimestamp != 0 && (timestamp - lastInputTimestamp) > resetThresholdMs) {
+  ClassificationResult getSmoothedResult(ClassificationResult classificationResult) {
+    int nowMs = DateTime.now().millisecondsSinceEpoch;
+    if (nowMs - lastInputMs > resetThresholdMs) {
       window.clear();
     }
-    lastInputTimestamp = timestamp;
+    lastInputMs = nowMs;
 
-    // Nếu cửa sổ đầy, loại bỏ giá trị cũ nhất
-    if (window.length >= windowSize) {
+    if (window.length == windowSize) {
       window.removeLast();
     }
+    window.addFirst(classificationResult);
 
-    // Thêm giá trị mới vào đầu danh sách
-    window.addFirst(currentResult);
-
-    // Lấy tất cả các lớp bài tập
     Set<String> allClasses = {};
     for (var result in window) {
       allClasses.addAll(result.getAllClasses());
@@ -38,19 +34,17 @@ class EMASmoothing {
 
     ClassificationResult smoothedResult = ClassificationResult();
 
-    // Tính trung bình EMA cho từng lớp bài tập
-    for (String className in allClasses) {
-      double factor = 1.0;
+    for (var className in allClasses) {
+      double factor = 1;
       double topSum = 0;
       double bottomSum = 0;
 
       for (var result in window) {
-        double confidence = result.getClassConfidence(className);
-        topSum += factor * confidence;
+        double value = result.getClassConfidence(className);
+        topSum += factor * value;
         bottomSum += factor;
-        factor *= (1.0 - alpha); // Giảm trọng số theo thời gian
+        factor *= (1.0 - alpha);
       }
-
       smoothedResult.putClassConfidence(className, topSum / bottomSum);
     }
 
