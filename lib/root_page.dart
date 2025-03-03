@@ -7,6 +7,7 @@ import 'package:untitled/screen/profile/user_screen.dart';
 import 'package:untitled/screen/search/search.dart';
 import 'package:camera/camera.dart';
 
+
 class RootPage extends StatefulWidget {
   final List<CameraDescription> cameras; // Thêm danh sách cameras
 
